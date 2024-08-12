@@ -1,0 +1,13 @@
+mooglists/
+isochrones/
+outlines/
+outsort/
+outtemp/
+PHOENIX/
+test_files/
+.vscode/
+__pycache__
+*.dat
+*.tar.gz
+RunAbundanceOnMOOGatomLists
+RunAbundanceOnMOOGatomLists.cpp
