@@ -7,6 +7,10 @@ g++ RunAbundanceOnGoodLines.cpp -o RunAbundanceOnGoodLines -lgsl -lgslcblas -O2 
 
 gfortran linemake/linemake.f -o linemake/linemake -O2 -ffixed-line-length-none
 
+cd moog
+make
+cd ..
+
 echo "Downloading mooglists"
 curl "https://drive.usercontent.google.com/download?id=1zZEePXb1mW17dlddEtWwYrrRPksNKfek&confirm=xxx" -o mooglists.tar.gz
 echo "Downloading isochrones"
