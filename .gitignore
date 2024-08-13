@@ -11,3 +11,4 @@ __pycache__
 *.tar.gz
 RunAbundanceOnMOOGatomLists
 RunAbundanceOnMOOGatomLists.cpp
+example-tauCet/
