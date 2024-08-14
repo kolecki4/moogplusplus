@@ -1,0 +1,30 @@
+synth
+standard_out    'MOOGout/stdOutThread5.txt'
+summary_out     'MOOGout/sumOutThread5.txt'
+smoothed_out    'MOOGout/smoothedOutThread5.txt'
+model_in        'mpplib/modelatmosphere.txt'
+lines_in        'outsort/thread5'
+atmosphere      1
+lines           1
+molecules       2
+flux/int        0
+damping         1
+obspectrum      0
+plot            1
+abundances     10    1
+   26       -0.10
+   20        0.00
+   22        0.00
+   12        0.00
+   14        0.00
+    6        0.00
+    8        0.00
+   11        0.00
+   13        0.00
+   19        0.00
+synlimits
+   4541.60   4542.28      0.01     20.00
+plotpars       1
+   4541.60   4542.28      0.00      1.30
+ 0 0 0 1.0
+ r 0.043 4.500 0.814 0.0 0.0

@@ -1,10 +1,29 @@
  starting wavelength: 
  ending wavelength: 
-replacing log(gf) from good list:   7701.494      76.0
-adding new line with hfs/iso components:   7697.771      21.0
+replacing log(gf) from good list:   4535.136      24.0
+replacing log(gf) from good list:   4535.569      22.0
+replacing log(gf) from good list:   4535.697      24.0
+replacing log(gf) from good list:   4535.752      24.0
+replacing log(gf) from good list:   4535.843      22.0
+replacing log(gf) from good list:   4535.918      22.0
+replacing log(gf) from good list:   4535.920      59.1
+replacing log(gf) from good list:   4536.040      22.0
+replacing log(gf) from good list:   4536.510      62.1
+replacing log(gf) from good list:   4537.874      58.1
+replacing log(gf) from good list:   4538.560      62.1
+replacing log(gf) from good list:   4538.740      66.1
+replacing log(gf) from good list:   4539.590      24.1
+replacing log(gf) from good list:   4539.745      58.1
+replacing log(gf) from good list:   4539.781      24.0
+replacing log(gf) from good list:   4540.007      23.0
+replacing log(gf) from good list:   4540.180      62.1
+replacing log(gf) from good list:   4540.229      68.1
+adding new line with hfs/iso components:   4537.941      62.1
  add in molecular lines (y/n)? 
  add Kurucz hfs for Fe-group lines without recent
  lab studies, [Sc I, Sc II, & Cu I] (y/n)? 
-adding new line with hfs/iso components:   7696.699      21.0
-adding new line with hfs/iso components:   7697.475      25.0
+adding new line with hfs/iso components:   4538.333      23.0
+adding new line with hfs/iso components:   4538.912      27.0
+adding new line with hfs/iso components:   4539.681      27.0
+adding new line with hfs/iso components:   4540.266      27.0
  DONE!  CHECK THE LINE LIST CAREFULLY!

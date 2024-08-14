@@ -533,7 +533,7 @@ def readAbundances(workDir, paramFile, elements):
 
     for i in elements:
         try:
-            summary = np.genfromtxt(workDir + "%i" % i + "/abundanceSummary.txt", names = ["wav", "[X/H]", "v_broad", "chi2"], ndmin = 2)
+            summary = np.genfromtxt(workDir + "%i" % i + "/abundanceSummary.txt", names = ["wav", "[X/H]", "v_broad", "chi2"])
             if np.max(summary["XH"]) - np.min(summary["XH"]) > 1.1:
                 summary = summary[(summary["XH"] > 0.3 + np.min(summary["XH"])) & (summary["XH"] < np.max(summary["XH"])-0.3) ]
 
@@ -543,7 +543,7 @@ def readAbundances(workDir, paramFile, elements):
             abundances = np.append(abundances, np.median(summary["XH"]))
             errorbars = np.append(errorbars, np.std(summary["XH"])/np.sqrt(len(summary)))
 
-        except IOError:
+        except:
             abundances = np.append(abundances, 0)
             errorbars = np.append(errorbars, 0)
     for i in range(len(elements)):

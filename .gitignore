@@ -12,3 +12,6 @@ __pycache__
 RunAbundanceOnMOOGatomLists
 RunAbundanceOnMOOGatomLists.cpp
 example-tauCet/
+linemakeconsoleout.txt
+mpplib/modelatmosphere.txt
+moog/*.o

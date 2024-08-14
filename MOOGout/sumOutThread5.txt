@@ -1,0 +1,20 @@
+ALL abundances NOT listed below differ from solar by  -0.41 dex
+element C :  abundance =  8.02
+element O :  abundance =  8.28
+element Na:  abundance =  5.83
+element Mg:  abundance =  7.19
+element Al:  abundance =  6.04
+element Si:  abundance =  7.10
+element K :  abundance =  4.62
+element Ca:  abundance =  5.93
+element Ti:  abundance =  4.54
+element Fe:  abundance =  6.99
+MODEL: TEFF=5448  GRAVITY=4.53 LTE                           vt= 1.50 M/H=-0.41 
+   4541.600   4542.280      0.010     20.000
+ 0.0933 0.0743 0.0568 0.0437 0.0351 0.0294 0.0245 0.0199 0.0152 0.0109
+ 0.0078 0.0063 0.0067 0.0090 0.0130 0.0174 0.0201 0.0196 0.0161 0.0112
+ 0.0070 0.0043 0.0030 0.0024 0.0022 0.0022 0.0023 0.0029 0.0046 0.0096
+ 0.0215 0.0440 0.0753 0.1056 0.1212 0.1143 0.0883 0.0558 0.0291 0.0133
+ 0.0066 0.0058 0.0094 0.0168 0.0248 0.0282 0.0244 0.0162 0.0085 0.0042
+ 0.0025 0.0020 0.0021 0.0022 0.0025 0.0030 0.0040 0.0063 0.0120 0.0251
+ 0.0486 0.0801 0.1094 0.1241 0.1182 0.0954 0.0653 0.0391 0.0214

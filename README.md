@@ -26,8 +26,17 @@ Once you're aware of how many threads you'll be able to utilize, set the maximum
 
 - Otherwise, you're on your own determining where GSL was installed to. Change line 5 of INSTALL.sh to be identical to above. Then, change the -I flag to point to your include folder and change the -L flag to point to your lib folder 
 
+- If you are running Mac OS with a conda environment activated (as in, you see "(base)" listed on your command line), you must `conda deactivate` before you run the install script. You can safely `conda activate` afterwards.
 
 
+-sudo apt install glibc
+-sudo apt upgrade gfortran
+-sudo apt upgrade g++
+-brew install coreutils on mac
+-unit tests to check each par
+-conda deactivate before you install, then conda activate
+-remove *.o files from github
+-Mac OS install XCode
 
 ## Running MOOG++
 
