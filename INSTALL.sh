@@ -4,9 +4,10 @@ ARGC=$#
 # Unique requirements for Linux ###############################################
 if [[ $OSTYPE == *"linux"* ]];
 then
+    # Check that GCC is installed
     echo ""
     gcc --version | grep "gcc"
-    if [ $? -eq 127 ];
+    if [ $? -ne 0 ];
     then
         echo "Check that you have gcc installed on your system"
         echo "Try running the following command:"
@@ -16,6 +17,22 @@ then
         echo "and then re-run the install script"
         exit 1
     fi;
+
+    # Check that GSL is installed
+    echo ""
+    echo "Package: libgsl-dev"
+    dpkg -s libgsl-dev | grep "installed"
+    if [ $? -ne 0 ];
+    then
+        echo "Check that you have GSL installed on your system"
+        echo "Try running the following command:"
+        echo ""
+        echo "sudo apt install libgsl-dev"
+        echo ""
+        echo "and then re-run the install script"
+        exit 1
+    fi;
+    
     echo "" 
     gppargs=" "
     
@@ -55,6 +72,22 @@ then
         echo "and then re-run the install script"
         exit 1
     fi;
+
+    # Check that GSL is installed
+    echo ""
+    echo "Package: libgsl-dev"
+    brew list gsl | grep "No such keg"
+    if [ $? -eq 0 ];
+    then
+        echo "Check that you have GSL installed on your system"
+        echo "Try running the following command:"
+        echo ""
+        echo "brwe install gsl"
+        echo ""
+        echo "and then re-run the install script"
+        exit 1
+    fi;
+
 
     # Check that there is no active conda environment (Apparently this breaks gfortran for some reason)
     conda env list | grep "*" -q
