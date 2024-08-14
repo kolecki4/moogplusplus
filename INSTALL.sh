@@ -1,7 +1,21 @@
 #! /bin/bash
-ARGC=$#
 
-# Unique requirements for Linux ###############################################
+
+
+# IF YOU NEED TO SET G++ TO LINK TO GSL, DO SO HERE ###########################
+
+# As an example, this is the correct setup for Mac OS 
+# if GSL was installed with Homebrew
+gppargs=" -I/opt/homebrew/include -L/opt/homebrew/lib"
+
+
+
+# DO NOT CHANGE ANYTHING BELOW THIS POINT #####################################
+
+
+
+
+# Unique requirements for Linux
 if [[ $OSTYPE == *"linux"* ]];
 then
     # Check that GCC is installed
@@ -24,24 +38,34 @@ then
     dpkg -s libgsl-dev | grep "installed"
     if [ $? -ne 0 ];
     then
-        echo "Check that you have GSL installed on your system"
-        echo "Try running the following command:"
-        echo ""
-        echo "sudo apt install libgsl-dev"
-        echo ""
-        echo "and then re-run the install script"
-        exit 1
+        echo "Searching for GSL..."
+        find / -iname gsl 2>&1 | grep -v "Permission denied\|Invalid argument\|anaconda\|downloads\|Downloads"
+        if [ $? -ne 0 ];
+        then
+            echo "Check that you have GSL installed on your system"
+            echo "Try running the following command:"
+            echo ""
+            echo "sudo apt install libgsl-dev"
+            echo ""
+            echo "and then re-run the install script"
+            exit 1
+        else
+            echo "GSL was found, but it was not installed using apt."
+            echo "Make sure you set the right g++ compiler flags to point it to where GSL is installed"
+        fi;
+    else
+        gppargs=" "
     fi;
     
     echo "" 
-    gppargs=" "
+
     
-###############################################################################
 
 
 
 
-# Unique requirements for Mac OS ##############################################
+
+# Unique requirements for Mac OS
 elif [[ $OSTYPE == *"darwin"* ]];
 then
     # Check that coreutils is installed
@@ -59,7 +83,6 @@ then
     fi;  
 
     # Check that gcc is installed
-    
     echo ""
     gcc --version | grep "gcc"
     if [ $? -eq 127 ];
@@ -79,13 +102,23 @@ then
     brew list gsl | grep "No such keg"
     if [ $? -eq 0 ];
     then
-        echo "Check that you have GSL installed on your system"
-        echo "Try running the following command:"
-        echo ""
-        echo "brwe install gsl"
-        echo ""
-        echo "and then re-run the install script"
-        exit 1
+        echo "Searching for GSL..."
+        find / -iname gsl 2>&1 | grep -v "Permission denied\|Invalid argument\|anaconda\|downloads\|Downloads"
+        if [ $? -ne 0 ];
+        then
+            echo "Check that you have GSL installed on your system"
+            echo "Try running the following command:"
+            echo ""
+            echo "brew install gsl"
+            echo ""
+            echo "and then re-run the install script"
+            exit 1
+        else
+            echo "GSL was found, but it was not installed using apt."
+            echo "Make sure you set the right g++ compiler flags to point it to where GSL is installed"
+        fi;
+    else
+        gppargs=" -I/opt/homebrew/include -L/opt/homebrew/lib"
     fi;
 
 
@@ -97,16 +130,13 @@ then
         echo "Please run 'conda deactivate' before procedding. You are free to reactivate your conda environment once the installation script has been run"
         exit 1
     fi;
-
-    gppargs=" -I/opt/homebrew/include -L/opt/homebrew/lib"
-
 fi;
-###############################################################################
 
 
 
 
-# Compile RunAbundanceOnGoodLines.cpp #########################################
+
+# Compile RunAbundanceOnGoodLines.cpp 
 echo "Compiling C++ code..."
 echo ""
 g++ RunAbundanceOnGoodLines.cpp -o RunAbundanceOnGoodLines -lgsl -lgslcblas -pthread -O2 -std=c++20$gppargs
@@ -123,12 +153,12 @@ then
         exit 1
     fi;
 fi;
-###############################################################################
 
 
 
 
-# Try installing python packages if they aren't already #######################
+
+# Try installing python packages if they aren't already
 pip show numpy | grep "Name\|Version"
 if [ $? -eq 1 ];
 then
@@ -169,14 +199,13 @@ then
 fi;
 echo ""
 echo "AstroQuery installed"
-###############################################################################
 
 
 
 
 
-# Compile linemake ############################################################
 
+# Compile linemake 
 echo ""
 echo "Compiling linemake..."
 gfortran linemake/linemake.f -o linemake/linemake -O2 -ffixed-line-length-none
@@ -186,22 +215,22 @@ then
     echo "Check that you have gfortran installed"
     exit 1
 fi;
-###############################################################################
 
 
 
 
-# Compile MOOG ################################################################
+
+# Compile MOOG 
 cd moog
 rm *.o
 make | grep "gfortran"
 cd ..
-###############################################################################
 
 
 
 
-# Download and extract large data files #######################################
+
+# Download and extract large data files
 if [ ! -d "mooglists" ];
 then
     echo ""
@@ -231,8 +260,12 @@ then
     tar -xf PHOENIX.tar.gz
     rm PHOENIX.tar.gz
 fi;
-###############################################################################
 
+
+
+
+
+# Exit successfully
 echo ""
 echo "DONE"
 echo ""
