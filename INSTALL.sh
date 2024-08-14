@@ -6,7 +6,7 @@
 
 # As an example, this is the correct setup for Mac OS 
 # if GSL was installed with Homebrew
-gppargs=" -I/opt/homebrew/include -L/opt/homebrew/lib"
+gppargs="-I/opt/homebrew/include -L/opt/homebrew/lib"
 
 
 
@@ -139,10 +139,10 @@ fi;
 # Compile RunAbundanceOnGoodLines.cpp 
 echo "Compiling C++ code..."
 echo ""
-g++ RunAbundanceOnGoodLines.cpp -o RunAbundanceOnGoodLines -lgsl -lgslcblas -pthread -O2 -std=c++20$gppargs
+g++ RunAbundanceOnGoodLines.cpp -o RunAbundanceOnGoodLines -lgsl -lgslcblas -pthread -O2 -std=c++20 $gppargs
 if [ $? -ne 0 ];
 then
-    g++ RunAbundanceOnGoodLines.cpp -o RunAbundanceOnGoodLines -lgsl -lgslcblas -pthread -O2 -std=c++2a$gppargs
+    g++ RunAbundanceOnGoodLines.cpp -o RunAbundanceOnGoodLines -lgsl -lgslcblas -pthread -O2 -std=c++2a $gppargs
     if [ $? -ne 0 ];
     then
         echo "Something went wrong when compiling the C++ code"
