@@ -139,7 +139,7 @@ fi;
 # Compile RunAbundanceOnGoodLines.cpp 
 echo "Compiling C++ code..."
 echo ""
-g++ RunAbundanceOnGoodLines.cpp -o RunAbundanceOnGoodLines -lgsl -lgslcblas -pthread -O2 -std=c++20 $gppargs
+g++ RunAbundanceOnGoodLines.cpp -o RunAbundanceOnGoodLines -lgsl -lgslcblas -pthread -O2 -std=c++17 $gppargs
 if [ $? -ne 0 ];
 then
     g++ RunAbundanceOnGoodLines.cpp -o RunAbundanceOnGoodLines -lgsl -lgslcblas -pthread -O2 -std=c++2a $gppargs

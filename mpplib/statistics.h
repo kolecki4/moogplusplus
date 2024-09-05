@@ -43,7 +43,7 @@ std::vector<double> interp1DWrapper(std::vector<double> newXPoints, std::vector<
     double m = 0;
 
     if((xData.size() < 3) || (yData.size() < 3) || (newXPoints.size() == 0)){
-        throw std::length_error("No data here to interpolate\n");
+        throw std::runtime_error("No data here to interpolate\n");
     }
 
     for(size_t i = 0; i < xData.size()-1; i++){
@@ -215,6 +215,10 @@ double multNormFactor(std::vector<double> &obs, std::vector<double> &syn, std::v
 }
 
 double median(std::vector<double> list){
+
+    if(!(list.size() > 0)){
+        return(0);
+    }
     std::sort(list.begin(), list.end());
 
     if (list.size() % 2 ==0){
@@ -226,6 +230,10 @@ double median(std::vector<double> list){
 }
 
 double median(std::vector<double> list, std::vector<double> filter, double cutoff){
+    if(!(list.size() > 0)){
+        return(0);
+    }
+    
     if(list.size() != filter.size()){
         std::length_error("uh oh\n");
     }

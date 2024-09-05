@@ -121,96 +121,99 @@ int abundanceRunOnFile(std::string paramFile, std::vector<double> &abundances, s
         while(wavelengthsToTest[wavelengthsToTest.size()-1] > maxWave){
             wavelengthsToTest.pop_back();
         }
+        if(wavelengthsToTest.size() > 0){
 
 
-        //Set the model atmosphere MOOG will use
-        interpAtmosphere(atmosphereInfo.Teff,atmosphereInfo.logg,atmosphereInfo.v_micro,atmosphereInfo.MonH, atmosphereInfo.AonM);
+
+            //Set the model atmosphere MOOG will use
+            interpAtmosphere(atmosphereInfo.Teff,atmosphereInfo.logg,atmosphereInfo.v_micro,atmosphereInfo.MonH, atmosphereInfo.AonM);
 
 
-        // Divide the line list equally among threads
-        std::vector<double> threadLineLists[MAX_THREADS];
-        for(size_t i = 0; i < wavelengthsToTest.size(); i++){
-            threadLineLists[i%MAX_THREADS].push_back(wavelengthsToTest[i]);
-        }
-        wavelengthsToTest.clear();
+            // Divide the line list equally among threads
+            std::vector<double> threadLineLists[MAX_THREADS];
+            for(size_t i = 0; i < wavelengthsToTest.size(); i++){
+                threadLineLists[i%MAX_THREADS].push_back(wavelengthsToTest[i]);
+            }
+            wavelengthsToTest.clear();
 
-        // Begin setup of lines to fit
-        line newLine[MAX_THREADS];
-        std::thread lineFittingThreads[MAX_THREADS];
+            // Begin setup of lines to fit
+            line newLine[MAX_THREADS];
+            std::thread lineFittingThreads[MAX_THREADS];
 
-        // For every line we want to fit, fit it
-        for(size_t k = 0; k < threadLineLists[0].size(); k++){
-            for(int i = 0; i < MAX_THREADS; i++){
+            // For every line we want to fit, fit it
+            for(size_t k = 0; k < threadLineLists[0].size(); k++){
+                for(int i = 0; i < MAX_THREADS; i++){
 
-                if(k < threadLineLists[i].size()){
-                    // Declare a line to synthesize, tell the program what observed spectrum we're comparing to
-                    newLine[i] = line(threadLineLists[i][k],std::stoi(atmosphereInfo.elementString[j]), atmosphereInfo.useMolecules, wholeSpec);
-                    newLine[i].lineInfo.maxAllowedChi2 = maxChi2;
-                    newLine[i].lineInfo.maxAllowedVBroad = maxVBroad;
-                    newLine[i].lineInfo.instBroadWidthPixels = nPixInstBroad;
+                    if(k < threadLineLists[i].size()){
+                        // Declare a line to synthesize, tell the program what observed spectrum we're comparing to
+                        newLine[i] = line(threadLineLists[i][k],std::stoi(atmosphereInfo.elementString[j]), atmosphereInfo.useMolecules, wholeSpec);
+                        newLine[i].lineInfo.maxAllowedChi2 = maxChi2;
+                        newLine[i].lineInfo.maxAllowedVBroad = maxVBroad;
+                        newLine[i].lineInfo.instBroadWidthPixels = nPixInstBroad;
+                        
+                        // Declare abundance offsets that differ from purely scaled solar
+                        newLine[i].lineInfo.abundanceOffsets = atmosphereInfo.customAbundances;
+                        newLine[i].parFileName = "MOOGout/thread" + std::to_string(i) + ".par";
+                        newLine[i].stdOutFile = "MOOGout/stdOutThread"  + std::to_string(i) + ".txt";
                     
-                    // Declare abundance offsets that differ from purely scaled solar
-                    newLine[i].lineInfo.abundanceOffsets = atmosphereInfo.customAbundances;
-                    newLine[i].parFileName = "MOOGout/thread" + std::to_string(i) + ".par";
-                    newLine[i].stdOutFile = "MOOGout/stdOutThread"  + std::to_string(i) + ".txt";
-                
-                    newLine[i].sumOutFile = "MOOGout/sumOutThread"  + std::to_string(i) + ".txt";
-                    newLine[i].smoothedOutFile = "MOOGout/smoothedOutThread"  + std::to_string(i) + ".txt";
-                    newLine[i].lineMakeSuffix = "/thread" + std::to_string(i);
-                    //Fit Line
-                    lineFittingThreads[i] = std::thread(fitLine,std::ref(newLine[i]),std::ref(atmosphereInfo), std::ref(abVector),std::ref(vbVector),std::ref(x2Vector), atmosphereInfo.outDataDir[j]);
+                        newLine[i].sumOutFile = "MOOGout/sumOutThread"  + std::to_string(i) + ".txt";
+                        newLine[i].smoothedOutFile = "MOOGout/smoothedOutThread"  + std::to_string(i) + ".txt";
+                        newLine[i].lineMakeSuffix = "/thread" + std::to_string(i);
+                        //Fit Line
+                        lineFittingThreads[i] = std::thread(fitLine,std::ref(newLine[i]),std::ref(atmosphereInfo), std::ref(abVector),std::ref(vbVector),std::ref(x2Vector), atmosphereInfo.outDataDir[j]);
+                    }
+
+                    else{
+                        lineFittingThreads[i] = std::thread([](int a){return a;}, 0);
+                    }
                 }
 
-                else{
-                    lineFittingThreads[i] = std::thread([](int a){return a;}, 0);
+                for(int i = 0; i < MAX_THREADS; i++){
+                    lineFittingThreads[i].join();
+                }
+            }
+            
+            
+            
+            // Calculate median and standard deviation of fitted parameters
+            double medAbundance = 0;
+            double stdev = 0;
+            if(abVector.size()>15){
+                medAbundance= median(abVector,x2Vector,3);
+                stdev = stdevMedian(abVector,x2Vector,3);
+            }
+            
+            else{
+                medAbundance= median(abVector);
+                stdev = stdevMedian(abVector);
+            }
+            std::cout << "[M/H] = " << atmosphereInfo.MonH << "\n"; 
+
+            std::cout << "[X/Fe] = " << medAbundance - atmosphereInfo.MonH << " +/- " << stdev << "\n"; 
+            if(atmosphereInfo.elementString[j] == "26"  && abs(atmosphereInfo.MonH - medAbundance) > stdev){
+                return 1;
+            }
+
+
+            if(atmosphereInfo.elementString[j] == "22" || atmosphereInfo.elementString[j] == "20" ){
+                alpha += (medAbundance-atmosphereInfo.MonH)/2;
+                stdevAlpha += pow(stdev, 2);
+
+                nAlphaElementsFit++;
+                std::cout << "Alpha alement" << nAlphaElementsFit << "fit\n";
+                std::cout << "ALPHA ELEMENT ABUNDANCE: " << medAbundance-atmosphereInfo.MonH << " - " << atmosphereInfo.AonM << " > " << pow(stdevAlpha,0.5) << "\n";
+
+                if(nAlphaElementsFit ==2){
+                    stdevAlpha = pow(stdevAlpha,0.5);
+                    std::cout << "ALPHA ABUNDANCE NONCONVERGENCE?: " << atmosphereInfo.AonM << " - " << alpha << " > " << stdevAlpha << "\n";
+                    if(abs(atmosphereInfo.AonM - alpha) > stdevAlpha){
+                        return 1;
+                    }
                 }
             }
 
-            for(int i = 0; i < MAX_THREADS; i++){
-                lineFittingThreads[i].join();
-            }
+        atmosphereInfo.customAbundances.updateElement(std::stoi(atmosphereInfo.elementString[j]), medAbundance - atmosphereInfo.MonH - (atmosphereInfo.AonM)*(std::stoi(atmosphereInfo.elementString[j]) % 2 == 0 && std::stoi(atmosphereInfo.elementString[j]) > 7 && std::stoi(atmosphereInfo.elementString[j]) < 23));
         }
-        
-        
-        
-        // Calculate median and standard deviation of fitted parameters
-        double medAbundance = 0;
-        double stdev = 0;
-        if(abVector.size()>15){
-            medAbundance= median(abVector,x2Vector,3);
-            stdev = stdevMedian(abVector,x2Vector,3);
-        }
-        
-        else{
-            medAbundance= median(abVector);
-            stdev = stdevMedian(abVector);
-        }
-        std::cout << "[M/H] = " << atmosphereInfo.MonH << "\n"; 
-
-        std::cout << "[X/Fe] = " << medAbundance - atmosphereInfo.MonH << " +/- " << stdev << "\n"; 
-        if(atmosphereInfo.elementString[j] == "26"  && abs(atmosphereInfo.MonH - medAbundance) > stdev){
-            return 1;
-        }
-
-
-        if(atmosphereInfo.elementString[j] == "22" || atmosphereInfo.elementString[j] == "20" ){
-            alpha += (medAbundance-atmosphereInfo.MonH)/2;
-            stdevAlpha += pow(stdev, 2);
-
-            nAlphaElementsFit++;
-            std::cout << "Alpha alement" << nAlphaElementsFit << "fit\n";
-            std::cout << "ALPHA ELEMENT ABUNDANCE: " << medAbundance-atmosphereInfo.MonH << " - " << atmosphereInfo.AonM << " > " << pow(stdevAlpha,0.5) << "\n";
-
-            if(nAlphaElementsFit ==2){
-                stdevAlpha = pow(stdevAlpha,0.5);
-                std::cout << "ALPHA ABUNDANCE NONCONVERGENCE?: " << atmosphereInfo.AonM << " - " << alpha << " > " << stdevAlpha << "\n";
-                if(abs(atmosphereInfo.AonM - alpha) > stdevAlpha){
-                    return 1;
-                }
-            }
-        }
-
-    atmosphereInfo.customAbundances.updateElement(std::stoi(atmosphereInfo.elementString[j]), medAbundance - atmosphereInfo.MonH - (atmosphereInfo.AonM)*(std::stoi(atmosphereInfo.elementString[j]) % 2 == 0 && std::stoi(atmosphereInfo.elementString[j]) > 7 && std::stoi(atmosphereInfo.elementString[j]) < 23));
     } // End of for loop
 
     return 0;

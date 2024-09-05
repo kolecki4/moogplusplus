@@ -486,6 +486,12 @@ def createLDFileName(teff,logg,metal,band):
     
     availmetals = np.array([1,0.5,-0.0,-0.5,-1,-1.5,-2,-3,-4])
     
+    if teff > 4900 and teff < 5000:
+        teff = 4900
+    if teff >= 5000 and teff < 5100:
+        teff = 5100
+
+
     filename = "PHOENIX/LD/"+band+"/Z"
     #if metal == 0: metal = -0.0
     filename += "%+.1f" % availmetals[np.argmin(np.abs(availmetals - metal))]
@@ -533,7 +539,7 @@ def readAbundances(workDir, paramFile, elements):
 
     for i in elements:
         try:
-            summary = np.genfromtxt(workDir + "%i" % i + "/abundanceSummary.txt", names = ["wav", "[X/H]", "v_broad", "chi2"])
+            summary = np.genfromtxt(workDir + "%i" % i + "/abundanceSummary.txt", names = ["wav", "[X/H]", "v_broad", "chi2"], ndmin = 2)
             if np.max(summary["XH"]) - np.min(summary["XH"]) > 1.1:
                 summary = summary[(summary["XH"] > 0.3 + np.min(summary["XH"])) & (summary["XH"] < np.max(summary["XH"])-0.3) ]
 
