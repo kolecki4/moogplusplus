@@ -21,7 +21,7 @@ echo " ║  ______________ │  │ ╲╱ │  ││  ╲__╱  ││  ╲__�
 echo " ║ _______________ │__│ *  │__│ ╲______╱* ╲______╱  ╲______╱ *            *    ║"
 echo " ║   *        *                 *                  *               *           ║"
 echo " ╟─────────────────────────────────────────────────────────────────────────────╢"
-echo " ║ ░░░░░░░▒▒▒▒▒▒▒▓▓▓▓▓▓▓███████ Beta Version 1.1.5 ██████▓▓▓▓▓▓▓▒▒▒▒▒▒▒░░░░░░░ ║"
+echo " ║ ░░░░░░░▒▒▒▒▒▒▒▓▓▓▓▓▓▓███████ Beta Version 1.2.0 ██████▓▓▓▓▓▓▓▒▒▒▒▒▒▒░░░░░░░ ║"
 echo " ╚═════════════════════════════════════════════════════════════════════════════╝"
 
 
@@ -59,4 +59,7 @@ else
         python computeParamFile.py "${starName}" ${workDir} params.txt ${initMetal} 0.0 ${i}
         ((i++))
     done
+    python correctForNLTE.py ${workDir} O
+    python correctForNLTE.py ${workDir} S
+    python correctForNLTE.py ${workDir} K
 fi;

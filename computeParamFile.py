@@ -1,17 +1,16 @@
 import numpy as np
 import sys
 import os
-from newIsoLib import *
+from mpplib.newIsoLib import *
 def setParams(starName, workDir, outFile, metal = 0, alpha = 0, runNum = 0):
     bands = "U,B,V,R,I,J,H,K,L,M".split(",")    
     filterWaves = "3650,4450,5510,6580,8060,12200,16300,21900,34500,47500".split(',')
     filterWaves = [float(i) for i in filterWaves]
 
-    targ = starName #"HD 10700"
-    outputFolder = workDir#"/home/jared/Documents/Spectra/KPF/CAP4/10700/"
-    #outputFolder = "/home/jared/Documents/GradResearch/MultiMOOG/CAP4/3651/"
-    outputFile = outFile#"paramsTest.txt"
-    elements = np.array([26,20,22,12,14,6,8,11,13,19])
+    targ = starName
+    outputFolder = workDir
+    outputFile = outFile
+    elements = np.array([26,20,22,12,14,6,7,8,16,11,13,19])
 
 
     specFile = ""
