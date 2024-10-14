@@ -3,7 +3,7 @@
    WorkDir example-tauCet/
   SpecFile 10700_flattened_20230908.txt
 ******************************
-   FitAtom        26,20,22,12,14,6,8,11,13,19
+   FitAtom        26,20,22,12,14,6,7,8,16,11,13,19
 ******************************
      T_eff      5446        29
     log(g)      4.53      0.02
@@ -33,7 +33,9 @@
   SetAbund        12     -0.31      0.05
   SetAbund        14     -0.29      0.03
   SetAbund         6     -0.31      0.08
+  SetAbund         7     -0.00      0.00
   SetAbund         8     -0.14      0.00
+  SetAbund        16     -0.35      0.00
   SetAbund        11     -0.29      0.09
   SetAbund        13     -0.57      0.00
   SetAbund        19     -0.01      0.00

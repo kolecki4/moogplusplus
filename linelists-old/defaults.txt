@@ -1,0 +1,12 @@
+ 6  linelists/C-lenient.txt
+ 7  linelists/N.txt
+ 8  linelists/O.txt
+12  linelists/Mg.txt
+14  linelists/Si.txt
+16  linelists/S.txt
+26  linelists/Fe.txt
+20  linelists/Ca.txt
+22  linelists/Ti.txt
+11  linelists/Na.txt
+13  linelists/Al.txt
+19  linelists/K.txt

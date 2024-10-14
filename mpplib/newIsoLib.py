@@ -540,8 +540,6 @@ def readAbundances(workDir, paramFile, elements):
     for i in elements:
         try:
             summary = np.genfromtxt(workDir + "%i" % i + "/abundanceSummary.txt", names = ["wav", "[X/H]", "v_broad", "chi2"], ndmin = 2)
-            if np.max(summary["XH"]) - np.min(summary["XH"]) > 1.1:
-                summary = summary[(summary["XH"] > 0.3 + np.min(summary["XH"])) & (summary["XH"] < np.max(summary["XH"])-0.3) ]
 
             if len(summary) > 15:
                 summary = summary[summary["chi2"] < 3]

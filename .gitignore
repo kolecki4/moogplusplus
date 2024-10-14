@@ -12,7 +12,11 @@ __pycache__
 *.tar.gz
 RunAbundanceOnMOOGatomLists
 RunAbundanceOnMOOGatomLists.cpp
+batchRun.py
 example-tauCet/
 linemakeconsoleout.txt
 mpplib/modelatmosphere.txt
 moog/*.o
+Barklem.dat
+BarklemUV.dat
+

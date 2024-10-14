@@ -528,7 +528,7 @@ void line::crossCorrelateObs(){
     double sum;
     std::vector<double> obsGridWavelengthsShifted = obsWaveGrid.getColumn("wavelength");
     std::vector<double> point;
-    for(double i = -.05; i < .05; i+=0.0005){
+    for(double i = -.1; i < .1; i+=0.0005){
         sum = 0;
 
 

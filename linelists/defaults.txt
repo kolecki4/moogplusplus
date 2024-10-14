@@ -1,4 +1,4 @@
- 6  linelists/C-lenient.txt
+ 6  linelists/C.txt
  7  linelists/N.txt
  8  linelists/O.txt
 12  linelists/Mg.txt

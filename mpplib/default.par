@@ -4,9 +4,9 @@ summary_out     'MOOGout/out2'
 smoothed_out    'MOOGout/out3'
 model_in        'mpplib/modelatmosphere.txt'
 lines_in        'outsort'
-atmosphere      1
-lines           1
-molecules       2
+atmosphere      0
+lines           0
+molecules       1
 flux/int        0
 damping         1
 obspectrum      0

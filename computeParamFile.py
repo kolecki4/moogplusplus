@@ -63,20 +63,38 @@ def setParams(starName, workDir, outFile, metal = 0, alpha = 0, runNum = 0):
                 AonMerror += initErrors[i]**2
         AonMerror = AonMerror**0.5
         
-        currentMetallicity = initOffsets[np.argmin(np.abs(elements - 26))]
-        currentAlpha = np.average([  initOffsets[np.argmin(np.abs(elements - 20))]  ,  initOffsets[np.argmin(np.abs(elements - 22))]  ]) - currentMetallicity
 
 
-        if np.abs(currentAlpha-lastAlpha) > AonMerror:
+        currentAlpha = np.average([  initOffsets[np.argmin(np.abs(elements - 20))]  ,  initOffsets[np.argmin(np.abs(elements - 22))]  ]) -(metal)
+        if np.abs(currentAlpha-lastAlpha) > max(AonMerror,0.01):
             alpha = ((9*currentAlpha + lastAlpha)/10)
             for i in range(len(elements)):
                 pass#initOffsets[i] = 0
+        else:
+            alpha = currentAlpha
 
-        if np.abs(currentMetallicity-lastMetallicity) > MonHerror:
+        currentMetallicity = initOffsets[np.argmin(np.abs(elements - 26))]
+        if np.abs(currentMetallicity-lastMetallicity) > max(MonHerror,0.01):
             metal = ((9*currentMetallicity + lastMetallicity)/10)
             for i in range(len(elements)):
-                pass#initOffsets[i] = 0'
-            alpha = lastAlpha       
+                initOffsets[i] = 0
+            alpha = lastAlpha
+        else:
+            metal = currentMetallicity
+        
+
+
+
+        print("[Fe/H]")
+        print("this input: %2f" % lastMetallicity)
+        print("this output: %2f" % currentMetallicity)
+        print("next input : %2f" % metal)
+
+        print("[A/Fe]")
+        print("this input: %2f" % lastAlpha)
+        print("this output: %2f" % currentAlpha)
+        print("next input : %2f" % alpha)
+
 
 
 
@@ -141,7 +159,7 @@ def setParams(starName, workDir, outFile, metal = 0, alpha = 0, runNum = 0):
     print("%10s%10.2f%10.2f" % ("[alpha/M]", params.alpha, AonMerror))
     print("")
 
-    print("This is iteration number %i" % runNum)
+    print("This was iteration number %i" % runNum)
 
     with open(outputFolder + outputFile, "w") as f:
         print("%10s" % targ, file = f)
@@ -176,9 +194,12 @@ def setParams(starName, workDir, outFile, metal = 0, alpha = 0, runNum = 0):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 4:
-        setParams(sys.argv[1], sys.argv[2], sys.argv[3])
-    elif len(sys.argv) == 7:
-        setParams(sys.argv[1], sys.argv[2], sys.argv[3], float(sys.argv[4]), float(sys.argv[5]), int(sys.argv[6]))
-    else:
-        print("Usage: computeParamFile.py [Star Name] [Star Directory] [Output Param File] (Metallicity = 0) (alpha = 0) (runNum = 0)")
+    try:
+        if len(sys.argv) == 4:
+            setParams(sys.argv[1], sys.argv[2], sys.argv[3])
+        elif len(sys.argv) == 7:
+            setParams(sys.argv[1], sys.argv[2], sys.argv[3], float(sys.argv[4]), float(sys.argv[5]), int(sys.argv[6]))
+        else:
+            print("Usage: computeParamFile.py [Star Name] [Star Directory] [Output Param File] (Metallicity = 0) (alpha = 0) (runNum = 0)")
+    except ValueError:
+        exit(1)
