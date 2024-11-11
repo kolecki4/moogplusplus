@@ -19,4 +19,6 @@ mpplib/modelatmosphere.txt
 moog/*.o
 Barklem.dat
 BarklemUV.dat
+fort.20
+fort.21
 

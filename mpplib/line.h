@@ -247,7 +247,9 @@ void line::cutOutObservedLine(double width){
         }
     }
 
-
+    if(obsWaveGrid.getColumn("wavelength").size() < 3){
+        throw std::runtime_error("No data for this line");
+}
 
     isInterpolated = false;
     isRenormalized = false;
@@ -616,7 +618,7 @@ void line::setWeightsForChi2(double vBroad){
         }
     }
     if(!bigEnoughChange){
-        throw std::runtime_error("Line doesn't change enough to fit well\n");
+        throw std::runtime_error("Line doesn't change enough to fit well");
     }
     for(int i = 0; i < synthWaveGrid.size(); i++){
         weightVec[i] /= weightSum;

@@ -104,6 +104,13 @@ def setParams(starName, workDir, outFile, metal = 0, alpha = 0, runNum = 0):
     ##### GET STELLAR PARAMETERS FROM ISOCHRONES
     if "sun" in targ.lower():
         params = stellarParameters()
+        if runNum == 0:
+            params.metal = 0    
+            params.alpha = 0 
+
+        else:
+            params.metal = metal    
+            params.alpha = alpha   
         params.teff = 5777
         params.steff = 0
         params.logg = 4.44
@@ -114,8 +121,7 @@ def setParams(starName, workDir, outFile, metal = 0, alpha = 0, runNum = 0):
         params.srad = 0
         params.lum = 1
         params.slum = 0
-        params.metal = 0    
-        params.alpha = 0    
+   
 
     else:
         phot = queryPhotometry(targ)

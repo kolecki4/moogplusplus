@@ -97,7 +97,12 @@ int fitLine(line &lineToFit, atmosphere &atmosphereToFit, std::vector<double> &a
     bool badLine = false;
 
     // Find what the resolution of the spectrum is
-    lineToFit.cutOutObservedLine(3);
+    try{lineToFit.cutOutObservedLine(3);}
+    catch(const std::runtime_error &e){
+        badLine = true;
+        std::cout << "Bad line " << lineToFit.lineInfo.centralWavelength << " (" << e.what() <<")" << "\n" ;
+        return 1;
+    }
     lineToFit.lineInfo.instBroadFWHM = lineToFit.lineInfo.instBroadWidthPixels*lineToFit.lineInfo.centralWavelength/ lineToFit.obsWaveGrid.avgResolution();
 
     // Find out how wide the synthesis region needs to be

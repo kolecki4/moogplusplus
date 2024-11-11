@@ -47,7 +47,7 @@ std::vector<double> interp1DWrapper(std::vector<double> newXPoints, std::vector<
     }
 
     for(size_t i = 0; i < xData.size()-1; i++){
-        if(xData[i+1]-xData[i] < 0){throw std::domain_error("X points must be strictly increasing\n");}
+        if(xData[i+1]-xData[i] < 0){throw std::runtime_error("X points must be strictly increasing\n");}
     }
 
     gsl_interp_accel *accel_ptr = gsl_interp_accel_alloc();
