@@ -107,8 +107,12 @@ int fitLine(line &lineToFit, atmosphere &atmosphereToFit, std::vector<double> &a
 
     // Find out how wide the synthesis region needs to be
     lineToFit.interpLDCoeff(atmosphereToFit.LD_Wavelengths,atmosphereToFit.LD_Coefficients);
-    lineToFit.calculateFitRegions();
-
+    try{lineToFit.calculateFitRegions();}
+    catch(const std::runtime_error &e){
+        badLine = true;
+        std::cout << "Bad line " << lineToFit.lineInfo.centralWavelength << " (" << e.what() <<")" << "\n" ;
+        return 1;
+    }
     // Set the width of synthesis
     lineToFit.lineInfo.widthOfSynthesis = lineToFit.getFitRanges()[1];
 
