@@ -129,7 +129,12 @@ int fitLine(line &lineToFit, atmosphere &atmosphereToFit, std::vector<double> &a
         lineToFit.MOOGitUp();
         
         // Get the line data from the complete stellar spectrum
-        lineToFit.cutOutObservedLine(lineToFit.lineInfo.widthOfSynthesis);
+        try{lineToFit.cutOutObservedLine(lineToFit.lineInfo.widthOfSynthesis);}
+        catch(const std::runtime_error &e){
+            badLine = true;
+            std::cout << "Bad line " << lineToFit.lineInfo.centralWavelength << " (" << e.what() <<")" << "\n" ;
+            return 1;
+        }
 
         // Get the synthesized line data from MOOG
         lineToFit.readSynthesizedLine(lineToFit.smoothedOutFile);
@@ -170,8 +175,12 @@ int fitLine(line &lineToFit, atmosphere &atmosphereToFit, std::vector<double> &a
             lineToFit.MOOGitUp();
 
             // Get the line data from the complete stellar spectrum
-            lineToFit.cutOutObservedLine(lineToFit.lineInfo.widthOfSynthesis);
-
+            try{lineToFit.cutOutObservedLine(lineToFit.lineInfo.widthOfSynthesis);}
+            catch(const std::runtime_error &e){
+                badLine = true;
+                std::cout << "Bad line " << lineToFit.lineInfo.centralWavelength << " (" << e.what() <<")" << "\n" ;
+                return 1;
+            }
             // Get the synthesized line data from MOOG
             lineToFit.readSynthesizedLine(lineToFit.smoothedOutFile);
 
