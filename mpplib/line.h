@@ -382,7 +382,12 @@ void line::calculateFitRegions(){
 
 
     lineInfo.widthOfSynthesis = 20.0;
-    cutOutObservedLine(lineInfo.widthOfSynthesis);
+    try{cutOutObservedLine(lineInfo.widthOfSynthesis);}
+    catch(const std::runtime_error &e){
+        badLine = true;
+        std::cout << "Bad line " << lineToFit.lineInfo.centralWavelength << " (" << e.what() <<")" << "\n" ;
+    }
+
     //lineInfo.instBroadFWHM = 3*lineInfo.centralWavelength/ obsWaveGrid.avgResolution();
     //lineInfo.v_broad = 3;
     
