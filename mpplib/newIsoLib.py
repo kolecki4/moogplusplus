@@ -211,7 +211,7 @@ def MISTreadiso(age, metall):
     mstr = s1+s2
     
     outColumns = [('EEP',float),('M/Mo',float),('LogTeff',float),('LogG',float),
-               ('LogL/Lo',float),('U',float),('V',float),('B',float),
+               ('LogL/Lo',float),('U',float),('B',float),('V',float),
                ('R',float),('I',float),('J',float),('H',float),
                ('K',float),('G',float),('Bp',float),('Rp',float),
                ('W1',float),('W2',float),('W3',float),('W4',float)]
