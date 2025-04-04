@@ -70,9 +70,9 @@ int abundanceRunOnFile(std::string paramFile, std::vector<double> &abundances, s
 
 
     double minWave = 0;                  // 0 is default
-    if(atmosphereInfo.Teff < 4500){
-        minWave = 7000;
-    }
+//    if(atmosphereInfo.Teff < 4500){
+//        minWave = 7000;
+//    }
 
     double maxWave = 0;
 

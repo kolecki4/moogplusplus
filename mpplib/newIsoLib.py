@@ -1,12 +1,18 @@
-import numpy as np
 import sys
 import os
+
+import numpy as np
 
 from astroquery.simbad import Simbad
 from astroquery.gaia import Gaia
 from astroquery.vizier import Vizier
 import astropy.units as u
+
+
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+from matplotlib.gridspec import GridSpec
+from matplotlib.colors import LinearSegmentedColormap
 
 from scipy.ndimage import gaussian_filter
 from scipy.stats import linregress
@@ -15,6 +21,9 @@ from scipy.interpolate import RegularGridInterpolator
 from scipy.interpolate import interp1d
 
 from astropy.io import fits
+
+
+plt.style.use("/home/jared/pltstyles/jared.mplstyle")
 
 class stellarParameters:    
     def __init__(self,teff = None,steff = None,logg = None,slogg = None,mass = None,smass = None,rad = None,srad = None,lum = None,slum = None,metal = None, alpha = None):
@@ -50,8 +59,9 @@ def queryPhotometry(star):
 
     """
     customSimbad=Simbad()
-    customSimbad.add_votable_fields('flux(U)','flux(V)','flux(B)','flux(R)','flux(I)','flux(J)','flux(H)','flux(K)', 'id(GAIA DR2)', 'id(GAIA DR1)', 'parallax', 'plx_error', 'id(WISEA)', 'id(WISE)')
-    customSimbad.add_votable_fields('flux_error(U)','flux_error(V)','flux_error(B)','flux_error(R)','flux_error(I)','flux_error(J)','flux_error(H)','flux_error(K)')
+    customSimbad.add_votable_fields('parallax', 'plx_error')
+    #customSimbad.add_votable_fields('flux_error(U)','flux_error(V)','flux_error(B)','flux_error(R)','flux_error(I)','flux_error(J)','flux_error(H)','flux_error(K)')
+    customSimbad.add_votable_fields("flux")    
     columns = [('U',float),('B',float),('Bp',float),('V',float),
            ('R',float),('G',float),('Rp',float),('I',float),('J',float),('H',float),
            ('K',float),
@@ -62,9 +72,27 @@ def queryPhotometry(star):
     
     #Query Object
     sim=customSimbad.query_object(star)
+    ids=customSimbad.query_objectids(star, criteria="ident.id LIKE 'Gaia%'")
+    #print(ids[0][0])
+    try:
+        gaia2 = None            
+        
+        for i in ids:
+            if "Gaia DR2" in i[0]:
+                gaia2 = i[0]
+        gaia2 = gaia2.replace("Gaia DR2", "")
+    except IndexError:
+        pass
+
+    try:
+        gaia3 = ids[["Gaia DR3" in i for i in ids]][0]
+        gaia3 = gaia3.replace("Gaia DR3", "") 
+    except IndexError:
+        gaia3 = None
+
     #print(sim["ID_GAIA_DR2"])
-    if 'Gaia DR2' in sim['ID_GAIA_DR2'][0]:
-        gaiaid=sim['ID_GAIA_DR2'][0].replace('Gaia DR2 ', '')
+    if gaia2 is not None:
+        gaiaid=gaia2
         gaia2Vizier = Vizier(columns = ["Source", "Plx", "e_Plx", "Gmag", "e_Gmag", "BPmag", "e_BPmag", "RPmag", "e_RPmag"])
         gaia2Vizier.ROW_LIMIT = -1
         gai=gaia2Vizier.query_object(star, catalog = 'I/345/gaia2', radius = 120*u.arcsec, coordinate_frame = "J2016")[0]
@@ -90,7 +118,9 @@ def queryPhotometry(star):
         magerrs['Bp']=(gai['e_BPmag']**2 + (5*ed/(d*np.log(10)))**2)**0.5
         magerrs['Rp']=(gai['e_RPmag']**2 + (5*ed/(d*np.log(10)))**2)**0.5
     
-    elif 'Gaia DR3' in sim['ID_GAIA_DR2'][0]:
+
+
+    elif gaia3 is not None:
         gaiaid=sim['ID_GAIA_DR2'][0].replace('Gaia DR3 ', '')
         #print(gaiaid)
         gaia3Vizier = Vizier(columns = ["Source", "Plx", "e_Plx", "Gmag", "e_Gmag", "BPmag", "e_BPmag", "RPmag", "e_RPmag"])
@@ -122,59 +152,64 @@ def queryPhotometry(star):
     else:
         #print("No GAIA parallax found. Using parallax from SIMBAD sourced from " + sim['PLX_BIBCODE'][0])
         #print('Using 1/parallax for distance value')
-        d = 1/(sim['PLX_VALUE'][0]/1000)
-        ed = d*sim['PLX_ERROR'][0]/sim['PLX_VALUE'][0]
+        d = 1/(sim['plx_value'][0]/1000)
+        ed = d*sim['plx_err'][0]/sim['plx_value'][0]
         
-        
-    if 'WISEA' in sim['ID_WISEA'][0]:
-        Vizier.ROW_LIMIT = -1
-        wiseid = sim['ID_WISEA'][0].replace('WISEA ', '')
-        wise=Vizier.query_object(star, catalog = 'II/328/allwise', radius = 120*u.arcsec)
-        #starmags['W1']=wise['II/328/allwise']['W1mag'][ np.where(wise[0]['AllWISE'] == wiseid)[0][0]] - 5*np.log10(d) + 5
-        #starmags['W2']=wise['II/328/allwise']['W2mag'][ np.where(wise[0]['AllWISE'] == wiseid)[0][0]] - 5*np.log10(d) + 5
-        #starmags['W3']=wise['II/328/allwise']['W3mag'][ np.where(wise[0]['AllWISE'] == wiseid)[0][0]] - 5*np.log10(d) + 5
-        #starmags['W4']=wise['II/328/allwise']['W4mag'][ np.where(wise[0]['AllWISE'] == wiseid)[0][0]] - 5*np.log10(d) + 5
-        
-        #magerrs['W1']=(wise['II/328/allwise']['e_W1mag'][ np.where(wise[0]['AllWISE'] == wiseid)[0][0]]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-        #magerrs['W2']=(wise['II/328/allwise']['e_W2mag'][ np.where(wise[0]['AllWISE'] == wiseid)[0][0]]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-        #magerrs['W3']=(wise['II/328/allwise']['e_W3mag'][ np.where(wise[0]['AllWISE'] == wiseid)[0][0]]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-        #magerrs['W4']=(wise['II/328/allwise']['e_W4mag'][ np.where(wise[0]['AllWISE'] == wiseid)[0][0]]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-        
-    elif 'WISE' in sim['ID_WISE'][0]:
-        Vizier.ROW_LIMIT = -1
-        wiseid = sim['ID_WISE'][0].replace('WISE ', '')
-        wise=Vizier.query_object(star, catalog = 'II/311', radius = 120*u.arcsec)  
-        #starmags['W1']=wise['II/311/wise']['W1mag'][ np.where(wise[0]['WISE'] == wiseid)[0][0]] - 5*np.log10(d) + 5
-        #starmags['W2']=wise['II/311/wise']['W2mag'][ np.where(wise[0]['WISE'] == wiseid)[0][0]] - 5*np.log10(d) + 5
-        #starmags['W3']=wise['II/311/wise']['W3mag'][ np.where(wise[0]['WISE'] == wiseid)[0][0]] - 5*np.log10(d) + 5
-        #starmags['W4']=wise['II/311/wise']['W4mag'][ np.where(wise[0]['WISE'] == wiseid)[0][0]] - 5*np.log10(d) + 5
+ 
+    try: 
+        starmags['U']=sim['flux'][sim["flux.filter"] == "U" ][0] - 5*np.log10(d) + 5
+        magerrs['U']=(sim['flux_err'][sim["flux.filter"] == "U" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
+    except IndexError: 
+        pass    
+    try:
+        starmags['V']=sim['flux'][sim["flux.filter"] == "V" ][0] - 5*np.log10(d) + 5
+        magerrs['V']=(sim['flux_err'][sim["flux.filter"] == "V" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
+    except IndexError: 
+        pass    
+    try:
+        starmags['B']=sim['flux'][sim["flux.filter"] == "B" ][0] - 5*np.log10(d) + 5
+        magerrs['B']=(sim['flux_err'][sim["flux.filter"] == "B" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
+    except IndexError:
+        pass    
+    try:
+        starmags['R']=sim['flux'][sim["flux.filter"] == "R" ][0] - 5*np.log10(d) + 5
+        magerrs['R']=(sim['flux_err'][sim["flux.filter"] == "R" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
+    except IndexError:
+        pass
+    try:
+        starmags['I']=sim['flux'][sim["flux.filter"] == "I" ][0] - 5*np.log10(d) + 5
+        magerrs['I']=(sim['flux_err'][sim["flux.filter"] == "I" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
+    except IndexError:
+        pass
+    try:
+        starmags['J']=sim['flux'][sim["flux.filter"] == "J" ][0] - 5*np.log10(d) + 5
+        magerrs['J']=(sim['flux_err'][sim["flux.filter"] == "J" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
+    except IndexError:
+        pass
+    try:
+        starmags['H']=sim['flux'][sim["flux.filter"] == "H" ][0] - 5*np.log10(d) + 5
+        magerrs['H']=(sim['flux_err'][sim["flux.filter"] == "H" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
+    except IndexError:
+        pass
+    try:
+        starmags['K']=sim['flux'][sim["flux.filter"] == "K" ][0] - 5*np.log10(d) + 5
+        magerrs['K']=(sim['flux_err'][sim["flux.filter"] == "K" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5    
+    except IndexError:
+        pass
+
+
+
+
+
+
+
+
+
     
-        #magerrs['W1']=(wise['II/311/wise']['e_W1mag'][ np.where(wise[0]['WISE'] == wiseid)[0][0]]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-        #magerrs['W2']=(wise['II/311/wise']['e_W2mag'][ np.where(wise[0]['WISE'] == wiseid)[0][0]]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-        #magerrs['W3']=(wise['II/311/wise']['e_W3mag'][ np.where(wise[0]['WISE'] == wiseid)[0][0]]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-        #magerrs['W4']=(wise['II/311/wise']['e_W4mag'][ np.where(wise[0]['WISE'] == wiseid)[0][0]]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-        
-    starmags['U']=sim['FLUX_U'][0] - 5*np.log10(d) + 5
-    starmags['V']=sim['FLUX_V'][0] - 5*np.log10(d) + 5
-    starmags['B']=sim['FLUX_B'][0] - 5*np.log10(d) + 5
-    starmags['R']=sim['FLUX_R'][0] - 5*np.log10(d) + 5
-    starmags['I']=sim['FLUX_I'][0] - 5*np.log10(d) + 5
-    starmags['J']=sim['FLUX_J'][0] - 5*np.log10(d) + 5
-    starmags['H']=sim['FLUX_H'][0] - 5*np.log10(d) + 5
-    starmags['K']=sim['FLUX_K'][0] - 5*np.log10(d) + 5
-    
-    magerrs['U']=(sim['FLUX_ERROR_U'][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    magerrs['V']=(sim['FLUX_ERROR_V'][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    magerrs['B']=(sim['FLUX_ERROR_B'][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    magerrs['R']=(sim['FLUX_ERROR_R'][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    magerrs['I']=(sim['FLUX_ERROR_I'][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    magerrs['J']=(sim['FLUX_ERROR_J'][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    magerrs['H']=(sim['FLUX_ERROR_H'][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    magerrs['K']=(sim['FLUX_ERROR_K'][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    
-    for band in ['J','H','K']:
-        if magerrs[band] == 0:
-            magerrs[band] = 0.01
+    for band in ["U","B","V","R","I","J","H","K"]:
+        if magerrs[band] == 0 and starmags[band] != 0:
+            magerrs[band] = 0.1
+
     return starmags, magerrs
 
 def MISTreadiso(age, metall):
@@ -308,7 +343,7 @@ def MISTreadiso(age, metall):
 
 def gibbs_sampling(image, w_start, samples):
 
-    image_pdf = image / image.sum()
+    image_pdf = image 
     height, width = image_pdf.shape
     result = []
     w_current = w_start
@@ -316,6 +351,12 @@ def gibbs_sampling(image, w_start, samples):
     for _ in range(samples):
         # sample height
         h_given_w = image_pdf[:, w_current] / image_pdf[:, w_current].sum()
+        h_given_w = np.where(np.isnan(h_given_w), 0, h_given_w)
+        
+        if np.all(h_given_w == 0):
+            h_given_w += 1
+            h_given_w /= np.sum(h_given_w)
+
         h_current = np.random.choice(np.array(range(height)), size=1, p=h_given_w)[0]
 
         # sample width
@@ -325,6 +366,24 @@ def gibbs_sampling(image, w_start, samples):
         result.append((h_current, w_current))
 
     return result
+
+def rejection_sampling(image, approx_samples):
+
+    image_pdf = image / image.sum()
+    pdf_max = image_pdf.max()
+    height, width = image_pdf.shape
+    p_success = 1 / (height * width * pdf_max)
+    actual_samples = min(int(approx_samples / p_success), int(1e8))
+
+    samples_height = np.random.randint(0, high=height, size=actual_samples)
+    samples_width = np.random.randint(0, high=width, size=actual_samples)
+    samples_uniform = np.random.uniform(0, 1, size=actual_samples)
+
+    result = [(h, w) for (h, w, u) in zip(samples_height, samples_width, samples_uniform) if
+                    (image_pdf[h, w] >= pdf_max * u)]
+
+    return result
+
 
 def MISTgetTandG(metal, ageRange, target = None, SIMBADphot = None):
     """
@@ -367,60 +426,53 @@ def MISTgetTandG(metal, ageRange, target = None, SIMBADphot = None):
         SIMBADphot=queryPhotometry(target)
         starmags=SIMBADphot[0]
         magerrs=SIMBADphot[1]
-    elif SIMBADphot != None and target == None:
+    elif SIMBADphot != None:
         starmags=SIMBADphot[0]
         magerrs=SIMBADphot[1]
-    else:
-        print("Exactly one of 'SIMBADphot' and 'target' may be used")
-            
-    if ageRange == '0':
-        availages = 10**(np.arange(5,7.4,0.1)-9)
-        linages = np.arange(.0002,.025,.0002)
-    elif ageRange == '1':   
-        availages = 10**(np.arange(7,9.4,0.1)-9)
-        linages = np.arange(.01,2.5,.02)
-    elif ageRange == '2':
-        availages = 10**(np.arange(9,10.1,0.1)-9)
-        linages = np.arange(.1,13,.1)
-    else:
-        ageRange = ageRange.replace('[','').replace(']','').split(',')
-        ageRange = [float(i) for i in ageRange]
-        availages = 10**(np.arange(5,10.11,0.05)-9)
-        availages = availages[(availages > ageRange[0]) & (availages < ageRange[1])]
-        linages = np.linspace(ageRange[0],ageRange[1],125)
+        
+    
+#    if ageRange == '0':
+#        availages = 10**(np.arange(5,7.4,0.1)-9)
+#        linages = np.arange(.0002,.025,.0002)
+#    elif ageRange == '1':   
+#        availages = 10**(np.arange(7,9.4,0.1)-9)
+#        linages = np.arange(.01,2.5,.02)
+#    elif ageRange == '2':
+#        availages = 10**(np.arange(9,10.1,0.1)-9)
+#        linages = np.arange(.1,13,.1)
+#    else:
+#        ageRange = ageRange.replace('[','').replace(']','').split(',')
+#        ageRange = [float(i) for i in ageRange]
+#        availages = 10**(np.arange(5,10.11,0.05)-9)
+#        availages = availages[(availages > ageRange[0]) & (availages < ageRange[1])]
+#        linages = np.linspace(ageRange[0],ageRange[1],125)
     # availages = np.append(np.arange(1,5,0.25),np.arange(5,13.1,0.5))
-    availages = 10**(np.arange(9,10.3,0.05)-9)
+    availages = 10**(np.arange(8,10.1,0.05)-9)
     # availages = 10**(np.arange(7,9.4,0.1)-9)
     # availages = 10**(np.arange(5,7.4,0.1)-9)
     
     #availages = 10**(np.arange(6,9,0.05)-9)
     
     # Let the program know what data we have that's good to use
-    bands = np.array(['U', 'B', 'Bp', 'V', 'R', 'G', 'Rp', 'I', 'J', 'H', 'K', 'W1', 'W2', 'W3', 'W4'])
-    waves = np.array([365,445,532,551,658,673,797,806,1250,1650,2150,3400,4600,12000,22000])
+    bands = np.array(['U', 'B', 'Bp', 'V', 'G', 'R', 'Rp', 'I', 'J', 'H', 'K', 'W1', 'W2', 'W3', 'W4'])
+    waves = np.array([365, 445,  532, 551, 640, 658,  797, 806,1250,1650,2150, 3400,4600, 12000,22000])
     
-    
-    goodPoints = (np.array([starmags[0][i] != np.zeros_like(starmags)[0][i] for i in range(len(starmags[0]))]) & np.array([magerrs[0][i] != np.zeros_like(magerrs)[0][i] for i in range(len(magerrs[0]))]))
-    
-    bands = bands[goodPoints]
-    waves = waves[goodPoints]
-    
-    
-    
-    
-    
-    
+    goodPoints = np.zeros_like(waves)
+    for i in bands:
+        if starmags[i] != 0:
+            print("%2s: %.2f %.2f" %(i, starmags[i], magerrs[i]))
+            goodPoints[np.argwhere(bands == i)[0][0]] = 1
+
+    bands = bands[goodPoints == 1]
+    waves = waves[goodPoints == 1] 
     
     smags = np.array([])
     emags = np.array([])
     imags = np.array([])
     
-
     for i in bands:
-        smags = np.append(smags, starmags[0][i])
-        emags = np.append(emags, magerrs[0][i])
-    
-
+        smags = np.append(smags, starmags[i])
+        emags = np.append(emags, magerrs[i])
     
     teffs = np.zeros([len(availages),1500])
     loggs = np.zeros([len(availages),1500])
@@ -430,7 +482,9 @@ def MISTgetTandG(metal, ageRange, target = None, SIMBADphot = None):
     
     residuals = np.zeros(shape = [len(availages),1500])
     chi2 = np.zeros(shape = [len(availages),1500])+9e9
-    
+    likelihood = np.zeros(shape = [len(availages),1500])
+    logl = np.zeros(shape = [len(availages),1500])
+    imagslist = np.zeros(shape = [len(availages),1500], dtype = list)
     for k in range(len(availages)):
         isoc = MISTreadiso(availages[k],metal)
         
@@ -442,16 +496,53 @@ def MISTgetTandG(metal, ageRange, target = None, SIMBADphot = None):
         
             resids = smags - imags
             chi2[k,i] = np.sum((resids**2)/(emags)**2)/(len(emags) - 2)
+
+            logl[k,i] = -0.5 * np.sum( (resids/emags)**2  -np.log(2*np.pi*emags )  )
+            
             residuals[k,i] = sum(np.abs(resids))
             teffs[k,i] = 10**isoc['LogTeff'][i]
             loggs[k,i] = isoc['LogG'][i]
             mass[k,i] = isoc['M/Mo'][i]
             lum[k,i] = 10**isoc['LogL/Lo'][i]
             rad[k,i] = np.sqrt((6.67408e-11 * isoc['M/Mo'][i]*1.988e30)/((10**isoc['LogG'][i] /100)))/6.957e8
-   
+
+            imagslist[k,i] = imags
+
+    
+    probabilities = np.exp(-0.5*(chi2/np.min(chi2) - 1 ))
+    probabilities = np.where(np.isnan(probabilities),0, probabilities)
+    probabilities = np.clip(probabilities,0,np.percentile(probabilities[probabilities > 0.001],99))
+    probabilities = probabilities/np.nansum(probabilities)
+
+#
+#
+#
+#    plt.figure(figsize = (9,9), dpi = 200, layout = "constrained")
+#    #plt.title("2D Isochrone Grid ([M/H]=0.3)")
+    image = np.clip(np.log10(probabilities),-int(np.log10(np.count_nonzero(probabilities))), 6)
+#    plt.imshow(image, origin = "lower", aspect = "auto", interpolation = "none")
+#    plt.colorbar(label = "log10(P)")
+#    #plt.contour(np.where(chi2 < twoSigmaChi2s[len(emags)-2]*np.min(chi2),1,0) + np.where(chi2 < oneSigmaChi2s[len(emags)-2]*np.min(chi2),1,0), origin = "lower", aspect = "auto", vmin = 0, vmax = 2, cmap = "Greens", interpolation = "none")
+#    plt.contour(np.where(chi2 == 9e9,1,0), cmap = "Reds", interpolation = "none", levels = 1, vmin = -1e9,vmax = 1, origin = "lower")
+#    plt.xlim(0,800)    
+#    plt.xlabel("EEP")
+#    plt.ylabel("Age (Gyr)")
+#    plt.yticks(range(len(availages)), labels = ["%.1f" % i for i in availages])
+    #plt.colorbar(label = "L")
+
+
+
+
     minPoint = np.where(chi2 == np.min(chi2))
     minPoint = (minPoint[0][0], minPoint[1][0])
     
+    samples = rejection_sampling(probabilities, 2000)
+    samplesx = [i[0] for i in samples]
+    samplesy = [i[1] for i in samples]
+    #st[samplesx,samplesy]
+    #sloggs = loggs[samplesx,samplesy]
+
+
     isoc = MISTreadiso(availages[minPoint[0]],metal)
     
     imags = np.array([])
@@ -459,24 +550,90 @@ def MISTgetTandG(metal, ageRange, target = None, SIMBADphot = None):
     for j in range(len(bands)):
         imags = np.append(imags,isoc[bands[j]][minPoint[1]])
     
-    plt.plot(waves,imags)
-    plt.errorbar(waves,smags, yerr = emags)
-    plt.figure()
-    plt.contourf(range(1500), availages, chi2/np.min(chi2), levels = range(20)*np.min(chi2))
-    plt.colorbar()
-    plt.xlim(80,200)
+#
+#    plt.figure(figsize = (9,6), dpi = 200)
+#    plt.plot(waves,imags, marker = 'o', label= "Best fit isochrone", lw =3, color = "#00beef")
+#    for j in range(len(bands)):
+#        plt.annotate(bands[j],(waves[j],imags[j]), (waves[j]+10,imags[j]+0.03))
+#    plt.ylabel("Absolute Magnitude")
+#    plt.xlabel("Filter Wavelength (nm)")
     
-    avTeff = np.average(teffs[chi2 < 2*np.min(chi2)])
-    avMass = np.average(mass[chi2 < 2*np.min(chi2)])
-    avLogg = np.average(loggs[chi2 < 2*np.min(chi2)])
-    avLum = np.average(lum[chi2 < 2*np.min(chi2)])
-    avRad = np.average(rad[chi2 < 2*np.min(chi2)])
+    #TODO : Check the labels on these fellas
+#    plt.errorbar(waves,smags, yerr = emags, marker = "o", lw = 3, label= "Stellar Photometry", color = "#042069")
+#    plt.legend()
+#    
+#    plt.figure()
+#    plt.hist(availages[samplesx], bins = availages)
+#    plt.xlim(0,13)
+#    plt.xlabel("Age (Gyr)")
+#    plt.show()
 
-    stdTeff = np.std(teffs[chi2 < 2*np.min(chi2)])
-    stdLogg = np.std(loggs[chi2 < 2*np.min(chi2)])
-    stdMass = np.std(mass[chi2 < 2*np.min(chi2)])
-    stdLum = np.std(lum[chi2 < 2*np.min(chi2)])
-    stdRad = np.std(rad[chi2 < 2*np.min(chi2)])
+    fig = plt.figure(dpi = 200, figsize = (15,15), layout = "tight")
+    gs = GridSpec(3,3,figure = fig)
+    ax = []
+    #plt.tight_layout(h_pad = -23.5, w_pad = -23.5)
+    ax.append(fig.add_subplot(gs[1:3,0:2]))
+    ax.append(fig.add_subplot(gs[0:1,0:2]))
+
+    im=ax[0].imshow(image, origin = "lower", aspect = "auto", interpolation = "none")
+    fig.colorbar(im, ax = ax[0], aspect = 30, label = "log10(P)")
+
+    colors = ["#0000", "#888"]
+    cmap = LinearSegmentedColormap.from_list("mylist", colors, N=2)
+    ax[0].imshow(np.where(chi2 == 9e9,1,0), aspect = "auto", cmap = cmap, interpolation = "none", vmin = 0, vmax = 1, origin = "lower")
+    ax[0].set_xlim(0,600)
+    ax[0].set_xlabel("EEP")
+    ax[0].set_ylabel("Age (Gyr)")
+    ax[0].set_title("Probability Grid")
+    ax[0].set_yticks(range(len(availages)), labels = ["%.1f" % i for i in availages])
+    ax[1].plot(waves,imags, marker = 'o', label= "Best-fit Grid Point", lw =3, color = "#222")
+    for j in range(len(bands)):
+        ax[1].annotate(bands[j],(waves[j],imags[j]), (waves[j]-75,imags[j]-0.1))
+    for j in range(100):
+        ax[1].plot(waves, imagslist[samplesx[j],samplesy[j]], marker = 'o', lw = 3, color = "#222", alpha = 0.01)
+    ax[1].set_ylabel("Absolute Magnitude")
+    ax[1].set_ylim(ax[1].get_ylim()[::-1])
+    ax[1].set_xlabel("Filter Wavelength (nm)")
+    ax[1].set_title("Photometric Fit")
+    #TODO : Check the labels on these fellas
+    ax[1].errorbar(waves,smags, yerr = emags, marker = "o", lw = 3, label= "Stellar Photometry", color = "#042069")
+    ax[1].legend()
+
+    ax.append(fig.add_subplot(gs[0:1,2:3]))
+    ax.append(fig.add_subplot(gs[1:2,2:3]))
+    ax.append(fig.add_subplot(gs[2:3,2:3]))
+    ax[2].hist(availages[samplesx], bins = availages)
+    ax[2].set_xlabel("Age (Gyr)")
+    ax[2].set_xscale("log")
+    ax[2].set_xticks([0.1,0.2,0.5,1,2,5,10], labels = ["%.3g" % i for i in [0.1,0.2,0.5,1,2,5,10]] )
+    ax[2].set_xticks([],[], minor = True)
+    ax[3].hist(teffs[samplesx,samplesy], bins = np.linspace(np.floor(np.min(teffs[samplesx,samplesy])/100)*100,np.ceil(np.max(teffs[samplesx,samplesy])/100)*100,20))
+    ax[3].set_xlim(np.floor(np.min(teffs[samplesx,samplesy])/100)*100,np.ceil(np.max(teffs[samplesx,samplesy])/100)*100)
+    ax[3].set_xlabel("Teff (K)")
+    ax[4].hist(loggs[samplesx,samplesy], bins = np.linspace(np.floor(np.min(loggs[samplesx,samplesy])*10)/10,np.ceil(np.max(loggs[samplesx,samplesy])*10)/10,20))
+    ax[4].set_xlim(np.floor(np.min(loggs[samplesx,samplesy])*10)/10,np.ceil(np.max(loggs[samplesx,samplesy])*10)/10)
+    ax[4].set_xlabel("log(g) [cgs]")
+
+
+
+    avTeff = np.average(teffs[samplesx,samplesy])
+    avMass = np.average(mass[samplesx,samplesy])
+    avLogg = np.average(loggs[samplesx,samplesy])
+    avLum = np.average(lum[samplesx,samplesy])
+    avRad = np.average(rad[samplesx,samplesy])
+
+    stdTeff = np.std(teffs[samplesx,samplesy])
+    stdLogg = np.std(loggs[samplesx,samplesy])
+    stdMass = np.std(mass[samplesx,samplesy])
+    stdLum = np.std(lum[samplesx,samplesy])
+    stdRad = np.std(rad[samplesx,samplesy])
+
+    ax[2].set_title("Age = %.1f +/- %.1f Gyr" % (np.average(availages[samplesx]), np.std(availages[samplesx])))
+    ax[3].set_title("Teff = %i +/- %i K" % (avTeff, stdTeff))
+    ax[4].set_title("logg = %.2f +/- %.2f" % (avLogg, stdLogg))
+    fig.suptitle("Isochronal Parameters for %s\n ([M/H] = %.1f)"% (target,metal), fontsize = 36, fontweight = "bold")
+    plt.savefig("aaa.png")
+    plt.close("all")
 
     #print("Lowest Chi^2 Value: %.2f" % np.min(chi2))
     

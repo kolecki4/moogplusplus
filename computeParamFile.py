@@ -11,7 +11,7 @@ def setParams(starName, workDir, outFile, metal = 0, alpha = 0, runNum = 0):
     outputFolder = workDir
     outputFile = outFile
     elements = np.array([26,20,22,12,14,6,7,8,16,11,13,19])
-
+    #elements = np.array([26,6])
 
     specFile = ""
     files = os.listdir(outputFolder)
@@ -126,14 +126,14 @@ def setParams(starName, workDir, outFile, metal = 0, alpha = 0, runNum = 0):
     else:
         phot = queryPhotometry(targ)
         if metal in np.round(np.arange(-1.5,0.51,0.1),2):
-            params =  MISTgetTandG(metal,"2", SIMBADphot=phot)
+            params =  MISTgetTandG(metal,"2", target = targ, SIMBADphot=phot)
             params.alpha = alpha 
 
         else:
             metLo = np.floor((metal)*10)/10
             metHi = np.ceil((metal)*10)/10
-            paramsLo = MISTgetTandG(metLo,"2", SIMBADphot=phot)
-            paramsHi = MISTgetTandG(metHi,"2", SIMBADphot=phot)
+            paramsLo = MISTgetTandG(metLo,"2", target = targ, SIMBADphot=phot)
+            paramsHi = MISTgetTandG(metHi,"2", target = targ, SIMBADphot=phot)
             
             params = stellarParameters()
             
@@ -196,7 +196,7 @@ def setParams(starName, workDir, outFile, metal = 0, alpha = 0, runNum = 0):
         print("", file = f)
         for i in range(len(elements)):
             print("%10s%10i%10.2f%10.2f" % ("SetAbund",elements[i],initOffsets[i]-(metal - lastMetallicity) - (alpha - lastAlpha)*(elements[i] % 2 == 0 and 7 < elements[i] < 23),initErrors[i]), file = f)
-
+        os.rename("aaa.png", outputFolder+"IsochronalParameters.png")
 
 
 if __name__ == "__main__":

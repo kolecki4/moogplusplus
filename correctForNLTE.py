@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.lib.recfunctions as rfn
 import sys
 import os
 from mpplib.newIsoLib import *
@@ -30,12 +31,47 @@ mh = float(paramFileLines[11].split()[1])
 
 
 nlteDir = "NLTE_Corrections/"
-nlteCorrFiles = ["O.txt", "S.txt", "K.txt"]
+nlteCorrFiles = ["O.txt", "S.txt", "Ti.txt", "Ca.txt"]
 
 if corrFile in ["C.txt", "O.txt", "S.txt"]:
     columns = ['Teff', 'logg', 'Fe', 'xi', 'leps', 'wav', 'adj']
+    table = np.genfromtxt(nlteDir + corrFile, names = columns)
+    table = np.sort(table, order='wav')
 elif corrFile in ["K.txt"]:
     columns = ['Teff', 'logg', 'Fe', 'xi', 'leps', 'wav','x','y', 'adj']
+    table = np.genfromtxt(nlteDir + corrFile, names = columns)
+    table = np.sort(table, order='wav')
+
+elif corrFile in ["Ti.txt"]:
+    columns = ['info','wav1','wav2','wav3','wav4','wav5','wav6','wav7','wav8','wav9']
+    table = np.genfromtxt(nlteDir + corrFile, names = columns, dtype = None)
+    col1 = np.array([float(i[1:5]) for i in table["info"]])
+    col2 = np.array([float(i[6:9]) for i in table["info"]])/100
+    col3 = np.array([float(i[11:13]) for i in table["info"]])/10
+    if table["info"][10] == "m": col3 = -col3
+    col4 = np.ones_like(table["wav1"])*1.5
+    col5 = np.ones_like(table["wav1"])*4.95 
+    col6 = np.ones_like(table["wav1"])*5500
+    col7 = np.array([     np.average([ table[ columns[i] ][j] for i in range(1,len(columns)) if table[ columns[i] ][j] < 10]) for j in range(len(col1)) ])
+    
+    table = rfn.append_fields(table,["Teff", "logg", "Fe", "xi", "leps", "wav", "adj"], [col1,col2,col3,col4,col5,col6,col7])
+
+elif corrFile in ["Ca.txt"]:
+    columns = ['info','wav1','wav2','wav3','wav4','wav5','wav6']
+    table = np.genfromtxt(nlteDir + corrFile, names = columns, dtype = None)
+    col1 = np.array([float(i[1:5]) for i in table["info"]])
+    col2 = np.array([float(i[6:9]) for i in table["info"]])/100
+    col3 = np.array([float(i[11:13]) for i in table["info"]])/10
+    if table["info"][10] == "m": col3 = -col3
+    col4 = np.ones_like(table["wav1"])*1.5
+    col5 = np.ones_like(table["wav1"])*4.95 
+    col6 = np.ones_like(table["wav1"])*5500
+    col7 = np.array([     np.average([ table[ columns[i] ][j] for i in range(1,len(columns)) if table[ columns[i] ][j] < 10]) for j in range(len(col1)) ])
+    
+    table = rfn.append_fields(table,["Teff", "logg", "Fe", "xi", "leps", "wav", "adj"], [col1,col2,col3,col4,col5,col6,col7])
+
+
+
 
 
 if corrFile == "O.txt":
@@ -53,12 +89,19 @@ elif corrFile == "K.txt":
         ab = abundances[np.argmax(elements == 19)]
     else:
         raise ArithmeticError
+elif corrFile == "Ca.txt":
+    if 20 in elements:
+        ab = abundances[np.argmax(elements == 19)]
+    else:
+        raise ArithmeticError
+elif corrFile == "Ti.txt":
+    if 22 in elements:
+        ab = abundances[np.argmax(elements == 19)]
+    else:
+        raise ArithmeticError
 
 
 
-
-table = np.genfromtxt(nlteDir + corrFile, names = columns)
-table = np.sort(table, order='wav')
 dfghd =0
 for i in range(len(table['Teff'])):
     if 4900 < table['Teff'][i] < 5100:
@@ -273,4 +316,16 @@ if element == "K":
         print("For the K I line at 7698A: delta = %.2f" % c[w == 7698.0 ], file = f)
 
     print("For the K I line at 7698A: delta = %.2f" % c[w == 7698.0 ])
+
+
+if element == "Ca":
+    with open(outputFolder + "nlte.txt", "a") as f:
+        print("For Ca in the Optical: delta = %.2f" % c[w == 5500.0 ], file = f)
+
+    print("For Ca in the Optical: delta = %.2f" % c[w == 5500.0 ])
+if element == "Ti":
+    with open(outputFolder + "nlte.txt", "a") as f:
+        print("For Ti in the Optical: delta = %.2f" % c[w == 5500.0 ], file = f)
+
+    print("For Ti in the Optical: delta = %.2f" % c[w == 5500.0 ])
 
