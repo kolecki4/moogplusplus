@@ -204,7 +204,7 @@ int fitLine(line &lineToFit, atmosphere &atmosphereToFit, std::vector<double> &a
                     if(minFlx > Flx[k]){minFlx = Flx[k];}
                 }
 
-                if(lineToFit.synGridChi2() < lineToFit.lineInfo.maxAllowedChi2 && minFlx > 0. && minFlx < 0.97 && lineToFit.lineInfo.v_broad < lineToFit.lineInfo.maxAllowedVBroad && !badLine){
+                if(lineToFit.synGridChi2() < lineToFit.lineInfo.maxAllowedChi2 && minFlx > 0. && minFlx < 0.999 && lineToFit.lineInfo.v_broad < lineToFit.lineInfo.maxAllowedVBroad && !badLine){
                     arrayWrite.lock();
                     // If we're fitting an alpha element, we need to remember to add the alpha enhancement
                     if(lineToFit.lineInfo.species % 2 == 0 && lineToFit.lineInfo.species > 7 && lineToFit.lineInfo.species < 23){

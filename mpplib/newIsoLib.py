@@ -59,7 +59,7 @@ def queryPhotometry(star):
 
     """
     customSimbad=Simbad()
-    customSimbad.add_votable_fields('parallax', 'plx_error')
+    customSimbad.add_votable_fields('parallax', 'plx_err')
     #customSimbad.add_votable_fields('flux_error(U)','flux_error(V)','flux_error(B)','flux_error(R)','flux_error(I)','flux_error(J)','flux_error(H)','flux_error(K)')
     customSimbad.add_votable_fields("flux")    
     columns = [('U',float),('B',float),('Bp',float),('V',float),
@@ -155,55 +155,17 @@ def queryPhotometry(star):
         d = 1/(sim['plx_value'][0]/1000)
         ed = d*sim['plx_err'][0]/sim['plx_value'][0]
         
+    
+    badBibcodes = ["2012yCat.1322....0Z", "2005yCat.2263....0D", "2009yCat.1315....0Z"]
  
-    try: 
-        starmags['U']=sim['flux'][sim["flux.filter"] == "U" ][0] - 5*np.log10(d) + 5
-        magerrs['U']=(sim['flux_err'][sim["flux.filter"] == "U" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    except IndexError: 
-        pass    
-    try:
-        starmags['V']=sim['flux'][sim["flux.filter"] == "V" ][0] - 5*np.log10(d) + 5
-        magerrs['V']=(sim['flux_err'][sim["flux.filter"] == "V" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    except IndexError: 
-        pass    
-    try:
-        starmags['B']=sim['flux'][sim["flux.filter"] == "B" ][0] - 5*np.log10(d) + 5
-        magerrs['B']=(sim['flux_err'][sim["flux.filter"] == "B" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    except IndexError:
-        pass    
-    try:
-        starmags['R']=sim['flux'][sim["flux.filter"] == "R" ][0] - 5*np.log10(d) + 5
-        magerrs['R']=(sim['flux_err'][sim["flux.filter"] == "R" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    except IndexError:
-        pass
-    try:
-        starmags['I']=sim['flux'][sim["flux.filter"] == "I" ][0] - 5*np.log10(d) + 5
-        magerrs['I']=(sim['flux_err'][sim["flux.filter"] == "I" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    except IndexError:
-        pass
-    try:
-        starmags['J']=sim['flux'][sim["flux.filter"] == "J" ][0] - 5*np.log10(d) + 5
-        magerrs['J']=(sim['flux_err'][sim["flux.filter"] == "J" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    except IndexError:
-        pass
-    try:
-        starmags['H']=sim['flux'][sim["flux.filter"] == "H" ][0] - 5*np.log10(d) + 5
-        magerrs['H']=(sim['flux_err'][sim["flux.filter"] == "H" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
-    except IndexError:
-        pass
-    try:
-        starmags['K']=sim['flux'][sim["flux.filter"] == "K" ][0] - 5*np.log10(d) + 5
-        magerrs['K']=(sim['flux_err'][sim["flux.filter"] == "K" ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5    
-    except IndexError:
-        pass
-
-
-
-
-
-
-
-
+    for band in ["U","B","V","R","I","J","H","K"]:
+        
+        try: 
+            if sim['flux.bibcode'][sim["flux.filter"] == band ][0] not in badBibcodes:
+                starmags[band]=sim['flux'][sim["flux.filter"] == band ][0] - 5*np.log10(d) + 5
+                magerrs[band]=(sim['flux_err'][sim["flux.filter"] == band ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
+        except IndexError: 
+            pass    
 
     
     for band in ["U","B","V","R","I","J","H","K"]:
