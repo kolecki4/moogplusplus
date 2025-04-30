@@ -161,7 +161,7 @@ def queryPhotometry(star):
     for band in ["U","B","V","R","I","J","H","K"]:
         
         try: 
-            if sim['flux.bibcode'][sim["flux.filter"] == band ][0] not in badBibcodes:
+            if sim['flux.bibcode'][sim["flux.filter"] == band ] not in badBibcodes:
                 starmags[band]=sim['flux'][sim["flux.filter"] == band ][0] - 5*np.log10(d) + 5
                 magerrs[band]=(sim['flux_err'][sim["flux.filter"] == band ][0]**2 + (5*ed/(d*np.log(10)))**2)**0.5
         except IndexError: 
