@@ -6,6 +6,13 @@ Future work will focus on adding more line lists, especially for the near-infrar
 
 ## Installation
 
+### 0. Basic Prerequisites
+The installation process requires the `gfortran` and `g++` compilers to be installed on your system. Your version of `g++` should be recent enough to support the C++17 standard.
+
+If you are running Linux, you'll need to have `glibc` installed as well.
+
+On Mac OS you'll need to install `coreutils` with homebrew and also make sure you have XCode installed.
+
 ### 1. GNU Scientific Library
 
 This is the C++ library on which the core line-fitting algorithm is based. On my Ubuntu-based machine, I was simply able to run `sudo apt install libgsl-dev` and have everything done for me. If you have a Mac, you may run `brew install gsl`. 
@@ -21,22 +28,14 @@ Once you're aware of how many threads you'll be able to utilize, set the maximum
 ### 3. Run INSTALL.sh
 - If you installed GSL using apt, you can run INSTALL.sh as is.
 
-- If you installed GSL using Homebrew, change line 5 of INSTALL.sh to the following:
-   - `g++ RunAbundanceOnGoodLines.cpp -o RunAbundanceOnGoodLines -lgsl -lgslcblas -O2 -Wall -std=c++20 -I/opt/homebrew/include -L/opt/homebrew/lib`
+- If you installed GSL using Homebrew, change line 9 of INSTALL.sh to the following:
+   - `gppargs="-I/opt/homebrew/include -L/opt/homebrew/lib"`
 
-- Otherwise, you're on your own determining where GSL was installed to. Change line 5 of INSTALL.sh to be identical to above. Then, change the -I flag to point to your include folder and change the -L flag to point to your lib folder 
+- Otherwise, you're on your own determining where GSL was installed to. Change line 9 of INSTALL.sh to be identical to above. Then, change the -I flag to point to your include folder and change the -L flag to point to your lib folder 
 
 - If you are running Mac OS with a conda environment activated (as in, you see "(base)" listed on your command line), you must `conda deactivate` before you run the install script. You can safely `conda activate` afterwards.
 
 
--sudo apt install glibc
--sudo apt upgrade gfortran
--sudo apt upgrade g++
--brew install coreutils on mac
--unit tests to check each par
--conda deactivate before you install, then conda activate
--remove *.o files from github
--Mac OS install XCode
 
 ## Running MOOG++
 
