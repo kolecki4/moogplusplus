@@ -43,7 +43,7 @@ Once you're aware of how many threads you'll be able to utilize, set the maximum
 The observed stellar spectrum file **absolutely must:**
 - Be normalized (continuum flux = 1 at all wavelengths)
 - Be corrected for stellar RV and barycentric velocity 
-- Be stored in plain-text format with one data point per line, in the format of `wavelength flux errorbar`. (it's fine if you don't have error bars, just make that column all zeros)
+- Be stored in plain-text format with one data point per line, in the format of `wavelength flux errorbar`. (If you don't have exact error bars, you can fill this column in with a constant value equal to the inverse of your signal-to-noise ratio. A non-zero error bar is required for the chi^2 fitting to work properly)
 - Have wavelengths in air wavelengths (not vacuum wavelengths) and in units of Angstroms
 
 
